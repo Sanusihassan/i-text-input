@@ -16,7 +16,7 @@ interface WrapperProps {
     onContentChange: (id: number, content: string) => void;
     onFocus?: () => void;
     onInput?: () => void;
-    className: string;
+    className?: string;
     style?: CSSProperties
 }
 

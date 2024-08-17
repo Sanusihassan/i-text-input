@@ -12,7 +12,7 @@ interface WrapperData {
 }
 
 export const Input = ({ width, height, className, style, onFocus, onInput }: {
-    width: string | number; height: string | number, className: string, style?: CSSProperties,
+    width: string | number; height: string | number, className?: string, style?: CSSProperties,
     onFocus?: () => void;
     onInput?: () => void;
 }) => {
