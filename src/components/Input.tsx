@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { CSSProperties, useCallback, useEffect, useRef } from 'react';
 import { Wrapper } from './Wrapper';
 import useUndo from 'use-undo';
 
@@ -11,7 +11,11 @@ interface WrapperData {
     height: number;
 }
 
-export const Input = ({ width, height, className }: { width: string | number; height: string | number, className: string }) => {
+export const Input = ({ width, height, className, style, onFocus, onInput }: {
+    width: string | number; height: string | number, className: string, style?: CSSProperties,
+    onFocus?: () => void;
+    onInput?: () => void;
+}) => {
     const [wrappersState, {
         set: setWrappers,
         undo: undoWrappers,
@@ -88,20 +92,11 @@ export const Input = ({ width, height, className }: { width: string | number; he
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [canUndo, canRedo, undoWrappers, redoWrappers]);
-    const [showControls, setShowControls] = useState(true);
     const canvasRef = useRef(null);
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        const controlsElement = document.querySelector('.controls');
-        if (controlsElement?.contains(e.target as Node)) {
-            setShowControls(true)
-        }
-        //  else {
 
-        // }
-    };
     return (
-        <div className="canvas" style={{ width, height, position: 'relative' }} ref={canvasRef} onMouseMove={handleMouseMove}>
+        <div className="canvas" style={{ width, height, position: 'relative' }} ref={canvasRef}>
             {wrappers.map(wrapper => (
                 <Wrapper
                     key={wrapper.id}
@@ -116,9 +111,10 @@ export const Input = ({ width, height, className }: { width: string | number; he
                     onMove={handleMove}
                     onResize={handleResize}
                     onContentChange={handleContentChange}
-                    showControls={showControls}
-                    setShowControls={setShowControls}
                     className={className}
+                    style={style}
+                    onFocus={onFocus}
+                    onInput={onInput}
                 />
             ))}
         </div>

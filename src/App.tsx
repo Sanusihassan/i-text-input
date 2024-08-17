@@ -4,10 +4,12 @@ function App() {
 
   return (
     <div className="app">
-      <Input height={"100%"} width={"100%"} className="bold italic" />
+      <Input height={"100%"} width={"100%"} className="bold italic" style={{
+        fontSize: "20px",
+        fontFamily: "arial"
+      }} />
       <h1>
         something here
-
       </h1>
       Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt consequuntur ipsam sit repudiandae exercitationem ut deleniti nesciunt aliquam. Molestiae reprehenderit optio temporibus nisi magni labore atque sit commodi, esse modi.
     </div>

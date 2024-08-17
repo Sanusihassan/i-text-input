@@ -1,6 +1,4 @@
-// when writing on the input the text is written backwards.
-// also when bluring only if the element clicked not controls then setShowControls to false
-import React, { useEffect, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import interact from 'interactjs';
 import { Controls } from './Controls';
 
@@ -11,22 +9,23 @@ interface WrapperProps {
     initialY: number;
     initialWidth: number;
     initialHeight: number;
-    showControls: boolean;
     onDuplicate: (id: number) => void;
     onDelete: (id: number) => void;
     onMove: (id: number, x: number, y: number) => void;
     onResize: (id: number, width: number, height: number) => void;
     onContentChange: (id: number, content: string) => void;
-    setShowControls: React.Dispatch<React.SetStateAction<boolean>>,
+    onFocus?: () => void;
+    onInput?: () => void;
     className: string;
+    style?: CSSProperties
 }
 
 export const Wrapper: React.FC<WrapperProps> = ({
     id, initialContent, initialX, initialY, initialWidth, initialHeight,
-    showControls,
     className,
+    style,
     onDuplicate, onDelete, onMove, onResize, onContentChange,
-    setShowControls
+    onFocus, onInput
 }) => {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [controlsPosition, setControlsPosition] = useState<'top' | 'bottom'>('top');
@@ -130,12 +129,23 @@ export const Wrapper: React.FC<WrapperProps> = ({
 
     const handleContentChange = (e: React.FormEvent<HTMLDivElement>) => {
         onContentChange(id, e.currentTarget.textContent || '');
+        if (onInput) {
+            onInput();
+        }
     };
 
-    const clearOutline = showControls || initialContent == "type something...";
+    const [showControls, setShowControls] = useState(true);
+    const clearOutline = showControls || initialContent == "type something..." || initialContent === "";
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const controlsElement = document.querySelector('.controls');
+        if (controlsElement?.contains(e.target as Node)) {
+            setShowControls(true)
+        }
+    };
 
     return (
-        <div className={`wrapper ${clearOutline ? "" : " no-outline"}`} ref={wrapperRef} style={{ position: 'absolute' }}>
+        <div className={`wrapper${clearOutline ? "" : " no-outline"}`} ref={wrapperRef} style={{ position: 'absolute' }} onMouseMove={handleMouseMove}>
             <Controls
                 position={controlsPosition}
                 onDuplicate={() => onDuplicate(id)}
@@ -157,11 +167,17 @@ export const Wrapper: React.FC<WrapperProps> = ({
                 suppressContentEditableWarning
                 onInput={handleContentChange}
                 tabIndex={0}
+                style={style}
                 onFocus={() => {
                     setShowControls(true);
-                    setShowInitialContent(false)
+                    setShowInitialContent(false);
+                    if (onFocus) {
+                        onFocus();
+                    }
                 }}
-                onBlur={() => { setShowControls(false) }}
+                onBlur={() => {
+                    setShowControls(false);
+                }}
             />
             {showInitialContent || (!showControls && !initialContent.length) ? <div className="initial-content">
                 {initialContent}

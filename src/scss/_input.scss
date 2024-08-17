@@ -2,7 +2,6 @@ $main-color: #341f97;
 
 .canvas {
     pointer-events: none;
-    position: absolute !important;
 
     >* {
         pointer-events: initial;
@@ -12,8 +11,22 @@ $main-color: #341f97;
 .wrapper {
     position: absolute;
 
+    border: 1.5px solid transparent;
+
     &:not(.no-outline) {
-        border: 1.5px solid #ccc;
+        border-color: #ccc;
+    }
+
+    transition: border-color .3s;
+
+    &.no-outline {
+        &:hover {
+            border-color: #ccc;
+
+            .resize-handle {
+                opacity: 1;
+            }
+        }
     }
 
     padding: 4px;
@@ -97,6 +110,7 @@ $main-color: #341f97;
         position: absolute;
         z-index: 10;
         cursor: pointer;
+        transition: opacity .3s;
     }
 
     .top-left {
