@@ -1,111 +1,128 @@
-// i'm sorry the interact.js version was working let's integrate the set boundries of the drag 
-// also the wrapper should be dragged and dropped within the boundries of the canvas.
-// the wrpper is not accuretely folowing the mouse
-import React, { useEffect, useRef, useState } from 'react';
-import interact from 'interactjs';
-import { RiDeleteBinLine } from 'react-icons/ri';
-import { HiOutlineDuplicate } from 'react-icons/hi';
- 
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Wrapper } from './Wrapper';
+import useUndo from 'use-undo';
 
-export const Input= ({width, height}: {width: string | number; height: string | number}) => {
-    const wrapperRef = useRef<HTMLDivElement>(null);
-    const [controlsPosition, setControlsPosition] = useState<'top' | 'bottom'>('top');
+interface WrapperData {
+    id: number;
+    content: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
 
-    useEffect(() => {
-        const wrapper = wrapperRef.current;
-        if (wrapper) {
-            interact(wrapper)
-                .draggable({
-                    onmove: dragMoveListener,
-                    listeners: {
-                        move: updateControlPosition,
-                    }
-                })
-                .resizable({
-                    edges: { top: true, left: true, bottom: true, right: true },
-                    listeners: {
-                        move(event) {
-                            const target = event.target as HTMLDivElement;
-                            let x = (parseFloat(target.getAttribute('data-x')!) || 0);
-                            let y = (parseFloat(target.getAttribute('data-y')!) || 0);
+export const Input = ({ width, height, className }: { width: string | number; height: string | number, className: string }) => {
+    const [wrappersState, {
+        set: setWrappers,
+        undo: undoWrappers,
+        redo: redoWrappers,
+        canUndo,
+        canRedo,
+    }] = useUndo<WrapperData[]>([
+        { id: 1, content: 'type something...', x: 0, y: 0, width: 200, height: 100 }
+    ]);
 
-                            // Update element's style
-                            target.style.width = `${event.rect.width}px`;
-                            target.style.height = `${event.rect.height}px`;
+    const { present: wrappers } = wrappersState;
 
-                            // Translate element
-                            x += event.deltaRect.left;
-                            y += event.deltaRect.top;
+    const updateWrappers = useCallback((newWrappers: WrapperData[]) => {
+        setWrappers(newWrappers);
+    }, [setWrappers]);
 
-                            target.style.transform = `translate(${x}px, ${y}px)`;
+    const handleDuplicate = (id: number) => {
+        const wrapperToDuplicate = wrappers.find(w => w.id === id);
+        if (wrapperToDuplicate) {
+            const canvasRect = document.querySelector('.canvas')?.getBoundingClientRect();
+            const newX = Math.min(wrapperToDuplicate.x + 10, (canvasRect?.width || 0) - wrapperToDuplicate.width);
+            const newY = Math.min(wrapperToDuplicate.y + 10, (canvasRect?.height || 0) - wrapperToDuplicate.height);
 
-                            target.setAttribute('data-x', x.toString());
-                            target.setAttribute('data-y', y.toString());
-
-                            // Update the position of control buttons
-                            updateControlPosition(event);
-                        }
-                    },
-                    modifiers: [
-                        interact.modifiers.restrictEdges({
-                            outer: 'parent',
-                        }),
-                        interact.modifiers.restrictSize({
-                            min: { width: 50, height: 20 },
-                        }),
-                    ],
-                    inertia: true,
-                });
-        }
-    }, []);
-
-    const updateControlPosition = (event: any) => {
-        const wrapper = wrapperRef.current;
-        if (wrapper) {
-            const rect = wrapper.getBoundingClientRect();
-            const parentRect = wrapper.parentElement!.getBoundingClientRect();
-            
-            if (rect.top < 40) {
-                setControlsPosition('bottom');
-            } else {
-                setControlsPosition('top');
-            }
+            const newWrappers = [
+                ...wrappers,
+                {
+                    ...wrapperToDuplicate,
+                    id: Date.now(),
+                    x: newX,
+                    y: newY
+                }
+            ];
+            updateWrappers(newWrappers);
         }
     };
 
-    return (
-        <div className="canvas" style={{width, height}}>
-        <div className="wrapper" ref={wrapperRef}>
-            <div className={`controls ${controlsPosition}`}>
-                <button className="btn"><RiDeleteBinLine /></button>
-                <button className="btn"><HiOutlineDuplicate /></button>
-            </div>
-            <div className="resize-handle top-left"></div>
-            <div className="resize-handle top-center"></div>
-            <div className="resize-handle top-right"></div>
-            <div className="resize-handle right-center"></div>
-            <div className="resize-handle bottom-right"></div>
-            <div className="resize-handle bottom-center"></div>
-            <div className="resize-handle bottom-left"></div>
-            <div className="resize-handle left-center"></div>
+    const handleDelete = (id: number) => {
+        const newWrappers = wrappers.filter(w => w.id !== id);
+        updateWrappers(newWrappers);
+    };
 
-            <div className="input" contentEditable>
-                test
-            </div>
-        </div>
+    const handleMove = (id: number, x: number, y: number) => {
+        const newWrappers = wrappers.map(w =>
+            w.id === id ? { ...w, x, y } : w
+        );
+        updateWrappers(newWrappers);
+    };
+
+    const handleResize = (id: number, width: number, height: number) => {
+        const newWrappers = wrappers.map(w =>
+            w.id === id ? { ...w, width, height } : w
+        );
+        updateWrappers(newWrappers);
+    };
+
+    const handleContentChange = (id: number, content: string) => {
+        const newWrappers = wrappers.map(w =>
+            w.id === id ? { ...w, content } : w
+        );
+        updateWrappers(newWrappers);
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.key === 'z' && canUndo) {
+                e.preventDefault();
+                undoWrappers();
+            } else if (e.ctrlKey && e.key === 'y' && canRedo) {
+                e.preventDefault();
+                redoWrappers();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [canUndo, canRedo, undoWrappers, redoWrappers]);
+    const [showControls, setShowControls] = useState(true);
+    const canvasRef = useRef(null);
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const controlsElement = document.querySelector('.controls');
+        if (controlsElement?.contains(e.target as Node)) {
+            setShowControls(true)
+        }
+        //  else {
+
+        // }
+    };
+    return (
+        <div className="canvas" style={{ width, height, position: 'relative' }} ref={canvasRef} onMouseMove={handleMouseMove}>
+            {wrappers.map(wrapper => (
+                <Wrapper
+                    key={wrapper.id}
+                    id={wrapper.id}
+                    initialContent={wrapper.content}
+                    initialX={wrapper.x}
+                    initialY={wrapper.y}
+                    initialWidth={wrapper.width}
+                    initialHeight={wrapper.height}
+                    onDuplicate={handleDuplicate}
+                    onDelete={handleDelete}
+                    onMove={handleMove}
+                    onResize={handleResize}
+                    onContentChange={handleContentChange}
+                    showControls={showControls}
+                    setShowControls={setShowControls}
+                    className={className}
+                />
+            ))}
         </div>
     );
 };
-
-function dragMoveListener(event: any) {
-    const target = event.target;
-    const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-    const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-
-    target.style.transform = `translate(${x}px, ${y}px)`;
-
-    target.setAttribute('data-x', x);
-    target.setAttribute('data-y', y);
-}
 
 export default Input;

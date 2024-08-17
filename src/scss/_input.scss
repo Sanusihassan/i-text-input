@@ -1,42 +1,99 @@
+$main-color: #341f97;
+
+.canvas {
+    pointer-events: none;
+    position: absolute !important;
+
+    >* {
+        pointer-events: initial;
+    }
+}
+
 .wrapper {
     position: absolute;
-    border: 1px solid #ccc;
-    display: inline-block;
+
+    &:not(.no-outline) {
+        border: 1.5px solid #ccc;
+    }
+
     padding: 4px;
     box-sizing: border-box;
+
+    // &:hover {
+    //     .controls {
+    //         display: none;
+    //     }
+    // }
+
     .controls {
         position: absolute;
         display: flex;
         gap: 4px;
+        z-index: 1;
 
         &.top {
-            top: -32px;
+            top: -44px;
             right: 0;
         }
 
         &.bottom {
-            bottom: -32px;
+            bottom: -44px;
             right: 0;
         }
 
         .btn {
-           @include extend("btn")
+            @include extend("bg-white btn");
+            border: 1px solid $main-color !important;
+            color: $main-color !important;
+
+            &:hover,
+            &:active {
+                background-color: lighten($main-color, 10) !important;
+                @include extend("text-white");
+            }
         }
     }
 
+    .initial-content {
+        @include extend("position-absolute");
+        top: 0;
+        font-size: 1.3em;
+        z-index: -1;
+        color: #7f8c8d;
+    }
 
     .input {
-        background-color: #f9f9f9;
         box-sizing: border-box;
         width: 100%;
         height: 100%;
-        outline: none !important
+        max-height: 100%;
+        outline: none !important;
+        overflow: auto;
+        font-size: 1.3em;
+
+
+        &.bold {
+            font-weight: bold;
+        }
+
+        &.italic {
+            font-style: italic;
+        }
+
+        &.strikethrough {
+            text-decoration: line-through;
+        }
+
+        &.underline {
+            text-decoration: underline;
+        }
     }
 
     .resize-handle {
-        width: 8px;
-        height: 8px;
-        background-color: #000;
+        width: 10px;
+        height: 10px;
+        background-color: transparent;
+        border: 1.5px solid $main-color;
         position: absolute;
         z-index: 10;
         cursor: pointer;

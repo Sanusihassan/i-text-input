@@ -3,11 +3,22 @@
 @import "./scss/mixins";
 
 @include bootstrap;
-html, body, .app, #root {
-    @include extend("h-100")
+
+
+body {
+    overflow: auto;
 }
+
+.app,
+#root {
+    height: 750px
+}
+
 .app {
-    @include extend("container");
     outline: 1px solid;
     @import "./scss/input";
+}
+
+.clear {
+    opacity: 0;
 }
