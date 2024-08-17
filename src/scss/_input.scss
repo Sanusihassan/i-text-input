@@ -1,0 +1,96 @@
+.wrapper {
+    position: absolute;
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 4px;
+    box-sizing: border-box;
+    .controls {
+        position: absolute;
+        display: flex;
+        gap: 4px;
+
+        &.top {
+            top: -32px;
+            right: 0;
+        }
+
+        &.bottom {
+            bottom: -32px;
+            right: 0;
+        }
+
+        .btn {
+           @include extend("btn")
+        }
+    }
+
+
+    .input {
+        background-color: #f9f9f9;
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        outline: none !important
+    }
+
+    .resize-handle {
+        width: 8px;
+        height: 8px;
+        background-color: #000;
+        position: absolute;
+        z-index: 10;
+        cursor: pointer;
+    }
+
+    .top-left {
+        top: -4px;
+        left: -4px;
+        cursor: nwse-resize;
+    }
+
+    .top-center {
+        top: -4px;
+        left: 50%;
+        transform: translateX(-50%);
+        cursor: ns-resize;
+    }
+
+    .top-right {
+        top: -4px;
+        right: -4px;
+        cursor: nesw-resize;
+    }
+
+    .right-center {
+        top: 50%;
+        right: -4px;
+        transform: translateY(-50%);
+        cursor: ew-resize;
+    }
+
+    .bottom-right {
+        bottom: -4px;
+        right: -4px;
+        cursor: nwse-resize;
+    }
+
+    .bottom-center {
+        bottom: -4px;
+        left: 50%;
+        transform: translateX(-50%);
+        cursor: ns-resize;
+    }
+
+    .bottom-left {
+        bottom: -4px;
+        left: -4px;
+        cursor: nesw-resize;
+    }
+
+    .left-center {
+        top: 50%;
+        left: -4px;
+        transform: translateY(-50%);
+        cursor: ew-resize;
+    }
+}

@@ -1,0 +1,13 @@
+@import "cssmolecule";
+@import "custom-bs";
+@import "./scss/mixins";
+
+@include bootstrap;
+html, body, .app, #root {
+    @include extend("h-100")
+}
+.app {
+    @include extend("container");
+    outline: 1px solid;
+    @import "./scss/input";
+}
